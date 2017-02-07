@@ -2,6 +2,7 @@
 #include "SysClock.h"
 #include "LED.h"
 #include "UART.h"
+#include "Timer.c"
 
 #include <string.h>
 #include <stdio.h>
@@ -31,6 +32,8 @@ int main(void){
 	System_Clock_Init(); // Switch System Clock = 80 MHz
 	LED_Init();
 	UART2_Init();
+	
+	 
 		
 	while (1){
 		n = sprintf((char *)buffer, "a = %d\t", a);
@@ -46,12 +49,17 @@ int main(void){
    	rxByte = USART_Read(USART2);
    	if (rxByte == 'N' || rxByte == 'n'){
 			Red_LED_Off();
-		USART_Write(USART2, (uint8_t *)"LED is Off\r\n\r\n", 16);
-	}
-	else if (rxByte == 'Y' || rxByte == 'y'){
+			USART_Write(USART2, (uint8_t *)"LED is Off\r\n\r\n", 16);
+			// run timer code here
+			run_timer();
+			USART_Write(USART2, (uint8_t *)"Timer is on!\r\n\r\n", 18);
+		} else if (rxByte == 'Y' || rxByte == 'y'){
 			Red_LED_On();
 			USART_Write(USART2, (uint8_t *)"LED is on\r\n\r\n", 15);
-	}
+			// stop timer code here
+			stop_timer();
+			USART_Write(USART2, (uint8_t *)"Timer is off!\r\n\r\n", 19);
+		}
 	}
 }
 
