@@ -1,10 +1,14 @@
-static char test = "hi\r\n\0";
+#include "stdio.h"
+
 
 void run_timer() {
-	printf("%s", test
+    char test[] = "hi\r\n";
+	printf("%s", test);
 	return;
 }
 
 void stop_timer() {
+    char test[] = "bye\r\n";
+	printf("%s", test);
 	return;
 }
