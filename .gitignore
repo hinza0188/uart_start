@@ -2,3 +2,7 @@
 /Listings
 /Objects
 
+# added ide ignores
+.idea/
+cmake-build-debug/
+
