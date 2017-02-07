@@ -5,6 +5,7 @@
 # added ide ignores
 .idea/
 cmake-build-debug/
+.DS_Store
 
 # added core for mac
-core_cm4.h
+CMSIS/
