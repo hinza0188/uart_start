@@ -6,3 +6,5 @@
 .idea/
 cmake-build-debug/
 
+# added core for mac
+core_cm4.h
