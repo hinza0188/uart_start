@@ -17,6 +17,17 @@ int main(void){
 	int		i ;
 	float b;
 	
+	/**
+	* start timer 2 
+	* copy timer when interrupt happens
+	* then take the differences of the timer
+	
+	* use pa0 make it input line
+	* capture event on timer 2
+	
+	* run 1 second -> million micro second (worry about overflow)
+	*/
+	
 	System_Clock_Init(); // Switch System Clock = 80 MHz
 	LED_Init();
 	UART2_Init();
