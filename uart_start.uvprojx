@@ -390,11 +390,6 @@
               <FilePath>Z:\UART_demo\LED.h</FilePath>
             </File>
             <File>
-              <FileName>main.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>Z:\UART_demo\main.c</FilePath>
-            </File>
-            <File>
               <FileName>startup_stm32l476xx.s</FileName>
               <FileType>2</FileType>
               <FilePath>Z:\UART_demo\startup_stm32l476xx.s</FilePath>
@@ -423,6 +418,11 @@
               <FileName>UART.h</FileName>
               <FileType>5</FileType>
               <FilePath>Z:\UART_demo\UART.h</FilePath>
+            </File>
+            <File>
+              <FileName>main.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\main.c</FilePath>
             </File>
           </Files>
         </Group>
