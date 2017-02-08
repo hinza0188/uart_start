@@ -7,10 +7,8 @@
 
 void PA0_Init(void) {
     RCC->AHB2ENR |= RCC_AHB2ENR_GPIOAEN; // enable clock for A group of GPIO
-    GPIOA->MODER &= ~3;
-
-    // PA0 is now in input mode
-    // GPIOA->Moder | = 2;
+    // GPIOA->MODER &= ~3;  // PA0 is now in input mode
+    GPIOA->Moder |= 2; 									// now initializing in Alternate function mode
 
 }
 
@@ -22,9 +20,9 @@ int read_pa0(void) {
 void monitor_pa0(void) {
     while(1){
         if ( read_pa0() ) {
-            GREEN_LED_On();
+            Green_LED_On();
         } else {
-            GREEN_LED_Off();
+            Green_LED_Off();
         }
     }
 }

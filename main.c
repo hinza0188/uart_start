@@ -14,10 +14,6 @@ char str[] = "Give Red LED control input (Y = On, N = off):\r\n";
 
 int main(void){
     char rxByte;
-	int		 a ;
-	int		 n ;
-	int		 i ;
-	float    b ;
 	
 	/**
 	* start timer 2 
