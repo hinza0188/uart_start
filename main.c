@@ -10,10 +10,14 @@
 
 char RxComByte = 0;
 uint8_t buffer[BufferSize];
-char str[] = "Give Red LED control input (Y = On, N = off):\r\n";
+char welcome[] = "Welcome to the Project 1! :)\r\n";
+char inst_1[] = "Press 1 to start timer\r\n";
+char inst_2[] = "Press 0 to stop timer\r\n";
+char running[] = "Timer is running!\r\n";
+char stopped[] = "Timer has stopped!\r\n";
 
 int main(void){
-    char rxByte;
+  char rxByte;
 	
 	/**
 	* start timer 2 
@@ -29,27 +33,20 @@ int main(void){
     // have loop code to look for input data register (IDR) (GPIOA_IDR)
 	// change
 
-	System_Clock_Init(); // Switch System Clock = 80 MHz
-    PA0_Init();
-	LED_Init();
+	System_Clock_Init();		// Switch System Clock = 80 MHz
 	UART2_Init();
+	Timer_Init();
 	
 	while (1){
-		USART_Write(USART2, (uint8_t *)str, strlen(str));	
-   	    rxByte = USART_Read(USART2);
-   	    if (rxByte == 'N' || rxByte == 'n'){
-			Red_LED_Off();
-			USART_Write(USART2, (uint8_t *)"LED is Off\r\n\r\n", 16);
+		USART_Write(USART2, (uint8_t *)welcome, strlen(welcome));	
+		USART_Write(USART2, (uint8_t *)inst_1, strlen(inst_1));	
+		USART_Write(USART2, (uint8_t *)inst_2, strlen(inst_2));	
+   	rxByte = USART_Read(USART2);
+		if (rxByte == '1'){
+			USART_Write(USART2, (uint8_t *)running, strlen(running));	
 			// run timer code here
 			run_timer();
-			USART_Write(USART2, (uint8_t *)"Timer is on!\r\n\r\n", 18);
-		} else if (rxByte == 'Y' || rxByte == 'y'){
-			Red_LED_On();
-			USART_Write(USART2, (uint8_t *)"LED is on\r\n\r\n", 15);
-			// stop timer code here
-			stop_timer();
-			USART_Write(USART2, (uint8_t *)"Timer is off!\r\n\r\n", 19);
-		}
+		} 
 	}
 }
 
