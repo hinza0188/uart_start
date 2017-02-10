@@ -1,6 +1,9 @@
 #include "Timer.h"
 #include "stm32l476xx.h"
+#include "UART.h"
 
+#include <string.h>
+#include <stdio.h>
 
 void Timer_Init() {
 	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOAEN; // Enable GPIO Port A
@@ -21,14 +24,15 @@ void Timer_Init() {
 }
 
 
-int run_timer() {
-	TIM2->CR1 |= TIM_CR1_CEN; // start input capturing
-	return 1;
-}
-
-int stop_timer() {
-	TIM2->CR1 |= 0; // clear the CR1 
-	return 0;
+void run_timer() {
+	int runCount = 1000; // hard coded testing round
+	
+	while (runCount >= 0) {
+		TIM2->CR1 |= TIM_CR1_CEN; // start input capturing
+		printf(capture_event);
+		runCount--;
+	}
+	TIM2->CR1 |= 0; // clear the CR1
 }
 
 int capture_event(){
