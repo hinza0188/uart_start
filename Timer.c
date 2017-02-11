@@ -52,4 +52,5 @@ void run_timer() {
 int capture_event(){
 	while (TIM2->SR & TIM_SR_CC1IF);	// captured an event!
 	return TIM2->CCR1;
+
 }
