@@ -23,15 +23,19 @@ void GPIO_Init() {
 */
 void Timer_Init() {	
 	RCC->APB1ENR1 |= RCC_APB1ENR1_TIM2EN; // Enable Timer 2 Clock
-	TIM2->PSC &= 80;											// 80Mhz CPU Pre-Scalar
-	TIM2->CCER |= TIM_CCER_CC1NE;  // disable Timer 2 output register
-	TIM2->CCMR1 |= TIM_CCMR1_CC1S_1; // the channel is now input, CCR1 register is now read-only
-	TIM2->CCER |= TIM_CCER_CC1E;		// enable Timer 2 output register
+	TIM2->PSC &= 80;											// Set 80Mhz CPU Pre-Scalar
+	TIM2->EGR |= 0x1;											// Reset TIM2 for applying PSC
+	//TIM2->CCER |= TIM_CCER_CC1NE;  // disable Timer 2 output register
+	//TIM2->CCMR1 |= TIM_CCMR1_CC1S_1; // the channel is now input, CCR1 register is now read-only
+	//TIM2->CCER |= TIM_CCER_CC1E;		// enable Timer 2 output register
+	TIM2->CCER |= 0x0;										// disable Timer 2 output register
+	TIM2->CCMR1 |= 0x1;										// the channel is now input, CCR1 register is now read-only
+	TIM2->CCER |= 0x1;										// enable Timer 2 output register
 }
 
 
 void run_timer() {
-	TIM2->CR1 |= 0x1; // start input capturing
+	TIM2->CR1 |= TIM_CR1_CEN; // start input capturing
 	while (1) {
 		//TIM2->CR1 |= TIM_CR1_CEN; // start input capturing
 		if (capture_event()) {
@@ -41,11 +45,11 @@ void run_timer() {
 			USART_Write(USART2, (uint8_t *)no, strlen(no));
 		}
 	}
-	TIM2->CR1 |= 0; // clear the CR1 bit to stop timer
+	TIM2->CR1 |= 0x0; // clear the CR1 bit to stop timer
 	USART_Write(USART2, (uint8_t *)stop, strlen(stop));
 }
 
-int capture_event(void){
-	while (TIM2->SR == TIM_SR_CC1IF);	// captured an event!
+int capture_event(){
+	while (TIM2->SR & TIM_SR_CC1IF);	// captured an event!
 	return TIM2->CCR1;
 }
