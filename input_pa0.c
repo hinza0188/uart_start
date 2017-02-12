@@ -7,8 +7,8 @@
 
 void PA0_Init(void) {
     RCC->AHB2ENR |= RCC_AHB2ENR_GPIOAEN; // enable clock for A group of GPIO
-    // GPIOA->MODER &= ~3;  // PA0 is now in input mode
-    GPIOA->Moder |= 2; 									// now initializing in Alternate function mode
+    // GPIOA->MODER &= ~3; 					 // PA0 is now in input mode
+    GPIOA->MODER |= 2; 									// now initializing in Alternate function mode
 
 }
 
