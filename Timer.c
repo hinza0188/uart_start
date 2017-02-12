@@ -1,11 +1,14 @@
 #include "Timer.h"
 #include "stm32l476xx.h"
 #include "UART.h"
+#include "LED.h"
+
+#include <stdio.h>
 #include <string.h>
 
 char yes[] = "yes\r\n";
 char no[] = "x\r\n";
-char stop[] = "Timer has stopped!\r\n\r\n";
+//char *value;
 
 /*
 * Initialize GPIO Port A into Alternate Function Mode
@@ -25,6 +28,8 @@ void Timer_Init() {
 	RCC->APB1ENR1 |= RCC_APB1ENR1_TIM2EN; // Enable Timer 2 Clock
 	TIM2->PSC &= 80;											// Set 80Mhz CPU Pre-Scalar
 	TIM2->EGR |= 0x1;											// Reset TIM2 for applying PSC
+	//NVIC_EnableIRQ(TIM3_IRQn);
+	NVIC_EnableIRQ(TIM2_IRQn);
 	//TIM2->CCER |= TIM_CCER_CC1NE;  // disable Timer 2 output register
 	//TIM2->CCMR1 |= TIM_CCMR1_CC1S_1; // the channel is now input, CCR1 register is now read-only
 	//TIM2->CCER |= TIM_CCER_CC1E;		// enable Timer 2 output register
@@ -33,9 +38,18 @@ void Timer_Init() {
 	TIM2->CCER |= 0x1;										// enable Timer 2 output register
 }
 
+void TIM2_IRQHandler() {
+	if (TIM2->SR & TIM_SR_CC1IF) {
+			Green_LED_On(); // see if this runs
+			//sprintf(value, (char)TIM2 -> CCR1);
+	}
+	
+}
+
 
 void run_timer() {
 	TIM2->CR1 |= TIM_CR1_CEN; // start input capturing
+	//TIM2->CR1 |= 0x1; // start input capturing
 	while (1) {
 		//TIM2->CR1 |= TIM_CR1_CEN; // start input capturing
 		if (capture_event()) {
@@ -46,11 +60,9 @@ void run_timer() {
 		}
 	}
 	TIM2->CR1 |= 0x0; // clear the CR1 bit to stop timer
-	USART_Write(USART2, (uint8_t *)stop, strlen(stop));
 }
 
 int capture_event(){
 	while (TIM2->SR & TIM_SR_CC1IF);	// captured an event!
 	return TIM2->CCR1;
-
 }

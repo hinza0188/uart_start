@@ -13,6 +13,7 @@ char welcome[] = "Welcome to the Project 1! :)\r\n";
 char inst_1[] = "Press 1 to start timer\r\n";
 char running[] = "Timer is running!\r\n";
 char dude[] = "Unexpected input!\r\n";
+char stop[] = "Timer has stopped!\r\n\r\n";
 
 int main(void){
   char rxByte;
@@ -43,6 +44,7 @@ int main(void){
 		if (rxByte == '1'){ // input is 1 for start the timer!
 			USART_Write(USART2, (uint8_t *)running, strlen(running));	
 			run_timer();
+			USART_Write(USART2, (uint8_t *)stop, strlen(stop));
 		} else {
 			USART_Write(USART2, (uint8_t *)dude, strlen(dude));
 		}
