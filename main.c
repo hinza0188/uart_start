@@ -35,10 +35,10 @@ int main(void){
 
 	System_Clock_Init();		// Switch System Clock = 80 MHz
 	UART2_Init();
-	GPIO_Init();
-	Timer_Init();
 	
 	while (1){
+        GPIO_Init();
+        Timer_Init();
         USART_Write(USART2, (uint8_t *)welcome, strlen(welcome));	
 		USART_Write(USART2, (uint8_t *)inst_1, strlen(inst_1));	
         rxByte = USART_Read(USART2);

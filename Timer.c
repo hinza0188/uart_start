@@ -51,6 +51,6 @@ void run_timer() {
 	for (i=0; i<1000; i++) {
         TIM2_IRQHandler();
 	}
-	TIM2->CR1 |= 0x0; // clear the CR1 bit to stop timer
+	TIM2->CR1 &= 0x0; // clear the CR1 bit to stop timer
 }
 
