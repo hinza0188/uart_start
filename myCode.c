@@ -1,37 +1,52 @@
 #include "stm32l4xx.h"
 #include "myCode.h"
-#include "stdio.h"
-#include "string.h"
-#include "UART.h"
+#include <string.h>
+#include <stdio.h>
+//#include "UART.h"
 
-
+char str2;
 int uvalue = 950 ;
 int lvalue = 1050;
+
+
+int j;
+int k,b,c;
+int buck[1051];
 int main()
 {	
 		
 		
-		char str2;
-		int result;
-		int buck[1051];
-		void user_int();
+		char buffer1[20];
+		char buffer2[20];
 		int a1= strlen("The value of the upper limit and lower limit\n\r\n\r\n");
 		int a2= strlen("DO you want to change the upper limit and lower limtit \n\r\n\r\n");
 		int a3= strlen("please change the upper limit and lower limit value\n\r\n\r\n");
 		int a4= strlen("the new uvalue and lvalue are \n\r\n\r\n");
 		int a5= strlen("correct value \n\r\n\r\n");
 		int a6= strlen( "please enter the correct value");
+		
+		
 		USART_Write(USART2, (uint8_t *)"The value of the upper limit and lower limit is 950 and 1050\n\r\n\r\n", a1);/////printf("The value of the upper limit and lower limit\n");
 		USART_Write(USART2, (uint8_t *)"DO you want to change the upper limit and lower limtit \n\r\n\r\n",a2) ;////////////////////////////////printf("DO you want to change the upper limit and lower limti");
 		str2 = USART_Read(USART2);
 		if(str2 == 'Y' || str2 =='y')
 		{
 			
-		
 			USART_Write(USART2, (uint8_t *)"please change the upper limit and lower limit value\n\r\n\r\n",a3);
-			g:uvalue=USART_Read(USART2);   ////scanf("%d", &uvalue);
-			lvalue=USART_Read(USART2);   ////scanf("%d" ,&lvalue);
+			g:
+		
+			for(j=0; j<20 ; j++)
+			{
+			buffer1[j]=USART_Read(USART2);   ////scanf("%d", &uvalue);
+			}
+			for(k=0; k<20 ; k++)
+			{
+			buffer2[k]=USART_Read(USART2);   ////scanf("%d" ,&lvalue);
+			}
+			uvalue=atoi(buffer1);
+			lvalue=atoi(buffer2);
 			
+
 			if( lvalue > 50 && lvalue <9950 && uvalue-lvalue ==100)
 			{
 				USART_Write(USART2, (uint8_t *)"correct value \n\r\n\r\n",a5);
@@ -44,6 +59,14 @@ int main()
 				
 		}
 	else 
+	{
+		timer_working();
+	}
+}
+
+
+
+int timer_working()
 	{
 			while( uvalue-lvalue ==100)
 	{
@@ -61,19 +84,46 @@ int main()
 		
 		}	
 
-	}
+	
 
 
-	void post_check()
+
+
+void post_check()
 	{
-	}
-	
-		
-	
-	
-
-
-	
+		int a7= strlen(" \n\rPOST TEST is succesfull . Program is going into Histogram mode \n\r \n\r ");
+		int a8= strlen("\n\rPOST TEST has failed.Give Y if you want to retry the POST TEST else N to end the program \n\r\n\r");
+		while(TIM_SR_CC1IF ==1)
+		{
+				int b;
+				b = TIM2->CCR1;
+		}
+		while(TIM_SR_CC1IF ==1)
+		{
+			int c;
+			c= TIM2->CCR1;
+		}
+		if(c-b<100000)
+		{
+			
+			USART_Write(USART2, (uint8_t *) "\n\rPOST TEST is succesfull . Program is going into Histogram mode \n\r \n\r ",a7);
+			timer_working();
+		}
+		else
+		{
+			USART_Write(USART2, (uint8_t *)"\n\rPOST TEST has failed.Give Y if you want to retry the POST TEST else N to end the program \n\r\n\r",a8);
+			str2 = USART_Read(USART2);
+			if(str2 == 'Y' || str2 =='y')
+			{
+				post_check();
+			}
+			else(str2 == 'N' || str2 =='n')
+			{
+				exit(void);
+			}
+			
+		}
+}
 
 	
 void  GPIO_config()
@@ -116,5 +166,4 @@ void timer_capture_config()
 	}
 	return TIM2  ->CCR1;
 		
-}		
-	
+}
