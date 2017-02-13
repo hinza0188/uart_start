@@ -2,7 +2,9 @@
 #include "myCode.h"
 #include <string.h>
 #include <stdio.h>
-//#include "UART.h"
+#include "UART.h"
+#include <stdlib.h>
+#include <ctype.h>
 
 char str2;
 int uvalue = 950 ;
@@ -35,11 +37,11 @@ int main()
 			USART_Write(USART2, (uint8_t *)"please change the upper limit and lower limit value\n\r\n\r\n",a3);
 			g:
 		
-			for(j=0; j<20 ; j++)
+			for(j=0; j<5||buffer1[j]!='\r'||buffer1[j]!='\n' ; j++)
 			{
 			buffer1[j]=USART_Read(USART2);   ////scanf("%d", &uvalue);
 			}
-			for(k=0; k<20 ; k++)
+			for(k=0; k<5||buffer2[k]!='\r'||buffer2[k]!='\n' ; k++)
 			{
 			buffer2[k]=USART_Read(USART2);   ////scanf("%d" ,&lvalue);
 			}
@@ -50,9 +52,12 @@ int main()
 			if( lvalue > 50 && lvalue <9950 && uvalue-lvalue ==100)
 			{
 				USART_Write(USART2, (uint8_t *)"correct value \n\r\n\r\n",a5);
+				
+				histogram();
 			}
 			else
-				{
+		
+			{
 				USART_Write(USART2, (uint8_t *) "please enter the correct value",a6);
 					goto g;
 				}
@@ -60,70 +65,78 @@ int main()
 		}
 	else 
 	{
-		timer_working();
+		 histogram();
 	}
 }
 
 
 
-int timer_working()
+int histogram()
 	{
-			while( uvalue-lvalue ==100)
-	{
-			while(TIM_SR_CC1IF ==1)
-			{
+			while(!(TIM_SR_CC1IF ==1);
+				
+					
+					int x=TIM2->CCR1;
+		
+						while (!(TIM_SR_CC1IF==1));
+						
+							 int y=TIM2->CCR1;
+						buck[y-x]++;
+						
+						
 					int n;
-					int a=TIM2->CCR1;
-				  buck[lvalue]=a;
-					n=strlen("Histogram \r\n Buck  ||  Value");
-					USART_Write(USART2, (uint8_t *)"Histogram \r\n Buck  ||  Value",n);
-					lvalue++;
+					n=strlen("Histogram \r\n Buck  ||  Value  \n\r %d  ||  %d",y);////
+					USART_Write(USART2, (uint8_t *)"Histogram \r\n Buck  ||  Value",n);////
+					
+
+
+
+
+
 			}
-		
-	}
-		
-		}	
+			
 
 	
 
 
 
 
-void post_check()
+			
+			
+			
+int post_check()
 	{
 		int a7= strlen(" \n\rPOST TEST is succesfull . Program is going into Histogram mode \n\r \n\r ");
 		int a8= strlen("\n\rPOST TEST has failed.Give Y if you want to retry the POST TEST else N to end the program \n\r\n\r");
-		while(TIM_SR_CC1IF ==1)
-		{
-				int b;
-				b = TIM2->CCR1;
-		}
-		while(TIM_SR_CC1IF ==1)
-		{
-			int c;
-			c= TIM2->CCR1;
-		}
-		if(c-b<100000)
-		{
-			
-			USART_Write(USART2, (uint8_t *) "\n\rPOST TEST is succesfull . Program is going into Histogram mode \n\r \n\r ",a7);
-			timer_working();
-		}
-		else
-		{
-			USART_Write(USART2, (uint8_t *)"\n\rPOST TEST has failed.Give Y if you want to retry the POST TEST else N to end the program \n\r\n\r",a8);
-			str2 = USART_Read(USART2);
-			if(str2 == 'Y' || str2 =='y')
-			{
-				post_check();
-			}
-			else(str2 == 'N' || str2 =='n')
-			{
-				exit(void);
-			}
+		while(TIM2->CR1 == TIM_CR1_CEN)
+		{	
+				int cnt;
+				for( int t=0; t<100 ; t++)
+						{
+							cnt++;
+						}
+				if( cnt == 100 && (TIM_SR_CCIF==1))
+				{
+							USART_Write(USART2, (uint8_t *) "\n\rPOST TEST is succesfull . Program is going into Histogram mode \n\r \n\r ",a7);
+							 main();	
+				}
+				else
+				{					
+				USART_Write(USART2, (uint8_t *)"\n\rPOST TEST has failed.Give Y if you want to retry the POST TEST else N to end the program \n\r\n\r",a8);
+				str2 = USART_Read(USART2);
+						if(str2 == 'Y' || str2 =='y')
+								{
+									post_check();
+								}
+						 else(str2 == 'N' || str2 =='n')
+								{
+									return 0;
+								}
 			
 		}
+	}				
 }
+		
 
 	
 void  GPIO_config()
@@ -135,30 +148,20 @@ RCC->AHB2ENR |= RCC_AHB2ENR_GPIOAEN;   ////enabling the GPIOA port
 } 
 
 
-void timer_cofig()
+int timer_cofig()
 {
 	///enabling the system clock for the timer
-		 RCC->APB1ENR1 = RCC_APB1ENR1_TIM2EN ;		 
+		RCC->APB1ENR1 = RCC_APB1ENR1_TIM2EN ;		 
 	///loading the prescalar vlaue into the psc register                 
-		 TIM2->PSC = 80;
+		TIM2->PSC = 0x4f;
 	///how to force new load to the prescalar value by creating an update???
-			
-}
-		 
-void timer_capture_config()
-	{
-		
-		TIM2->CCER= TIM_CCER_CC1NE; //////disable the input capture
+		TIM2->EGR |=0X01;
+		TIM2->CCER &= TIM_CCER_CC1NE; //////disable the input capture
 		TIM2->CCMR1 = TIM_CCMR1_CC1S_1;   ////
-		TIM2->CCER= TIM_CCER_CC1E; ///RE-ENBALE CAPTURE INPUT.
+		TIM2->CCER |= TIM_CCER_CC1E; ///RE-ENBALE CAPTURE INPUT.
+		TIM2->CR1= TIM_CR1_CEN ; ////starting the input capture 
 		
-	}
-	 
-	
-	int timer_operation()
-	{
-	 TIM2->CR1= TIM_CR1_CEN ; ////starting the input capture 
-		if( TIM_SR_CC1IF ==1)
+	if( TIM_SR_CC1IF ==1)
 		{
 			
 			
