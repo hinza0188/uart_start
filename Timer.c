@@ -8,6 +8,11 @@
 
 char yes[] = "yes\r\n";
 char no[] = "x\r\n";
+
+char post_i[] = "Initializing Power On Slef Test(POST)\r\n";
+char post_s[] = "Found an interrupt signal within 100 ms! \r\n";
+char post_f[] = "No singal detected within 100 ms, Try again? (Y/N)\r\n";
+
 static char p[bSize];
 
 /*
@@ -41,12 +46,12 @@ void TIM2_IRQHandler() {
         int n = sprintf(p, "Result: %u\r\n", TIM2->CCR1);
         USART_Write(USART2, (uint8_t *)p, n);
 	}
-	
 }
 
 
 void run_timer() {
     int i;
+    Timer_Init();
 	TIM2->CR1 |= TIM_CR1_CEN; // start input capturing
 	for (i=0; i<1000; i++) {
         TIM2_IRQHandler();
@@ -54,3 +59,24 @@ void run_timer() {
 	TIM2->CR1 &= 0x0; // clear the CR1 bit to stop timer
 }
 
+
+int POST() {
+    // start timer, and check the counter value
+    USART_Write(USART2, (uint8_t *)post_i, strlen(post_i));
+    Timer_Init();
+    TIM2->CR1 |= TIM_CR1_CEN; // start input capturing
+    while(!(TIM2->SR & TIM_SR_CC1IF)) {        
+        // success case
+        int m = sprintf(p, "waiting at: %u\r\n", TIM2->CCR1);
+        USART_Write(USART2, (uint8_t *)p, m);
+        if (TIM2->CCR1 > 500000) {
+            // fail case
+            USART_Write(USART2, (uint8_t *)post_f, strlen(post_f));
+            TIM2->CR1 &= 0x0; // clear the CR1 bit to stop timer
+            return 0;
+        }
+    }
+    USART_Write(USART2, (uint8_t *)post_s, strlen(post_s));
+    TIM2->CR1 &= 0x0; // clear the CR1 bit to stop timer
+    return 1;
+}

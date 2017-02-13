@@ -35,21 +35,22 @@ int main(void){
 
 	System_Clock_Init();		// Switch System Clock = 80 MHz
 	UART2_Init();
+    GPIO_Init();
 	
 	while (1){
-        GPIO_Init();
-        Timer_Init();
         USART_Write(USART2, (uint8_t *)welcome, strlen(welcome));	
 		USART_Write(USART2, (uint8_t *)inst_1, strlen(inst_1));	
         rxByte = USART_Read(USART2);
-        
-		
         if (rxByte == '1'){ // input is 1 for start the timer!
 			USART_Write(USART2, (uint8_t *)running, strlen(running));
             TIM2->CR1 |= TIM_CR1_CEN; // start input capturing
 			run_timer();
 			USART_Write(USART2, (uint8_t *)stop, strlen(stop));
-		} else {
+		} else if (rxByte == '2') {
+            char a[] = "running POST\r\n";
+            USART_Write(USART2, (uint8_t *)a, strlen(a));
+            POST();
+        } else {
 			USART_Write(USART2, (uint8_t *)dude, strlen(dude));
 		}
         if (rxByte == '0') {
