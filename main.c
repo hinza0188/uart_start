@@ -7,14 +7,15 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <ctype.h>
 
-#define sizebuffer 100
-#define limbuffer 20
+#define MAIN_BUFFER_SIZE 100
+#define LIMIIT_BUFFER_SIZE 5
 
-static char mainBuffer[sizebuffer];
+static char mainBuffer[MAIN_BUFFER_SIZE];
 static int numStr;
 
-static char limBuffer[limbuffer];
+static char limBuffer[LIMIIT_BUFFER_SIZE];
 
 int l_lim;
 int u_lim;
@@ -34,6 +35,8 @@ char a4[]= "the new uvalue and lvalue are \n\r\n\r\n";
 char a5[]= "correct value \n\r\n\r\n";
 char a6[]= "please enter the correct value";
 
+char nay[] = "Unexpected input! please type numbers only!\r\n";
+char default_prompt[] = "Keep the default values for the lower | upper limits\r\n";
 
 int main(void){
   char rxByte;
@@ -44,6 +47,7 @@ int main(void){
   GPIO_Init();
 	
 	post_pass = 1;
+	rxByte = USART_Read(USART2);
 	while (post_pass) {
 		// continuously run POST TEST
 		USART_Write(USART2, (uint8_t *)prompt_post, strlen(prompt_post));
@@ -52,7 +56,7 @@ int main(void){
 		}
 		USART_Write(USART2, (uint8_t *)prompt_post_2, strlen(prompt_post_2));
 	}
-	
+	/*
 	while (1){
 		USART_Write(USART2, (uint8_t *)welcome, strlen(welcome));	
 		USART_Write(USART2, (uint8_t *)run_post, strlen(run_post));
@@ -67,12 +71,12 @@ int main(void){
 		if (rxByte == 'Y' || rxByte == 'y') {
 			USART_Write(USART2, (uint8_t *)q1, strlen(q1));
 			// now collect user input
-			for (i=0; i>5; i++) {
-				if (isdigit(rxByte)) {
+			for (i=0; i>LIMIIT_BUFFER_SIZE; i++) {
+				if (rxByte == 'a') {
+				//if (isdigit(rxByte)) {
 					limBuffer[i] = rxByte;
-					USART
 				} else {
-					USART =
+					USART_Write(USART2, (uint8_t *) nay, strlen(nay));
 				}
 				if (rxByte == '\r'){
 					// kill the loop and terminate the buffer with caridge return
@@ -84,10 +88,13 @@ int main(void){
 			u_lim = l_lim + 100;
 		} else if (rxByte == 'N' || rxByte == 'n') {
 			// keep the limit values and run
-			continue;
+			USART_Write(USART2, (uint8_t *)default_prompt , strlen(default_prompt));
+		} else {
+			continue;		// restart upon other inputs
 		}
 		histogram(l_lim, u_lim);
 		
 	}
+	*/
 }
 
