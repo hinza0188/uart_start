@@ -68,9 +68,15 @@ int main(void){
 			USART_Write(USART2, (uint8_t *)q1, strlen(q1));
 			// now collect user input
 			for (i=0; i>5; i++) {
-				limBuffer[i] = rxByte;
-				if (limBuffer[i] == '\r'){
-					//fuck that
+				if (isdigit(rxByte)) {
+					limBuffer[i] = rxByte;
+					USART
+				} else {
+					USART =
+				}
+				if (rxByte == '\r'){
+					// kill the loop and terminate the buffer with caridge return
+					limBuffer[i] = '\r';
 					break;
 				}
 			}
