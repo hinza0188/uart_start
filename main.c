@@ -4,58 +4,84 @@
 #include "UART.h"
 #include "Timer.h"      // added timer function
 
+#include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
 
+#define sizebuffer 100
+#define limbuffer 20
+
+static char mainBuffer[sizebuffer];
+static int numStr;
+
+static char limBuffer[limbuffer];
+
+int l_lim;
+int u_lim;
+
 char RxComByte = 0;
 uint8_t buffer[BufferSize];
-char welcome[] = "Welcome to the Project 1! :)\r\n";
-char inst_1[] = "Press 1 to start timer\r\n";
-char running[] = "Timer is running!\r\n";
-char dude[] = "Unexpected input!\r\n";
-char stop[] = "Timer has stopped!\r\n";
-char e_prompt[] = "Press 0 to start again!\r\n\r\n";
+char welcome[] = "Welcome to the Project 1! :)\r\n\r\n";
+char run_post[] = "We're going to run Power On Self Test until it passes\r\n";
+char prompt_post[] = "Press '1' to start the test! \r\n";
+char prompt_post_2[] = "Fail! Please Try again LOL \r\n";
+
+char a1[]= "Lower Limit: %u  ||  Upper Limit: %u\r\n\r\n";
+char a2[]= "Do you want to change the lower limit? [Y/N]\r\n\r\n";
+char q1[]= "Please enter the number: \r\n";
+char a3[]= "please change the upper limit and lower limit value\n\r\n\r\n";
+char a4[]= "the new uvalue and lvalue are \n\r\n\r\n";
+char a5[]= "correct value \n\r\n\r\n";
+char a6[]= "please enter the correct value";
+
 
 int main(void){
   char rxByte;
-	
-	/**
-	* start timer 2 
-	* copy timer when interrupt happens
-	* then take the differences of the timer
-	
-	* use pa0 make it input line
-	* capture event on timer 2
-	
-	* run 1 second -> million micro second (worry about overflow)
-	*/
-    // init PA0 to be input mode
-    // have loop code to look for input data register (IDR) (GPIOA_IDR)
-	// change
-
+	int post_pass;
+	int i;
 	System_Clock_Init();		// Switch System Clock = 80 MHz
 	UART2_Init();
-    GPIO_Init();
+  GPIO_Init();
+	
+	post_pass = 1;
+	while (post_pass) {
+		// continuously run POST TEST
+		USART_Write(USART2, (uint8_t *)prompt_post, strlen(prompt_post));
+		if (rxByte == '1') {
+			post_pass = POST();
+		}
+		USART_Write(USART2, (uint8_t *)prompt_post_2, strlen(prompt_post_2));
+	}
 	
 	while (1){
-        USART_Write(USART2, (uint8_t *)welcome, strlen(welcome));	
-		USART_Write(USART2, (uint8_t *)inst_1, strlen(inst_1));	
-        rxByte = USART_Read(USART2);
-        if (rxByte == '1'){ // input is 1 for start the timer!
-			USART_Write(USART2, (uint8_t *)running, strlen(running));
-            TIM2->CR1 |= TIM_CR1_CEN; // start input capturing
-			run_timer();
-			USART_Write(USART2, (uint8_t *)stop, strlen(stop));
-		} else if (rxByte == '2') {
-            char a[] = "running POST\r\n";
-            USART_Write(USART2, (uint8_t *)a, strlen(a));
-            POST();
-        } else {
-			USART_Write(USART2, (uint8_t *)dude, strlen(dude));
+		USART_Write(USART2, (uint8_t *)welcome, strlen(welcome));	
+		USART_Write(USART2, (uint8_t *)run_post, strlen(run_post));
+		
+		// test passed! run histogram
+		l_lim = 950;
+		u_lim = l_lim + 100;
+		numStr = sprintf(mainBuffer, a1, l_lim, u_lim);
+		USART_Write(USART2, (uint8_t *)mainBuffer, numStr);
+		
+		USART_Write(USART2, (uint8_t *)a2, strlen(a2));
+		if (rxByte == 'Y' || rxByte == 'y') {
+			USART_Write(USART2, (uint8_t *)q1, strlen(q1));
+			// now collect user input
+			for (i=0; i>5; i++) {
+				limBuffer[i] = rxByte;
+				if (limBuffer[i] == '\r'){
+					//fuck that
+					break;
+				}
+			}
+			l_lim = atoi(limBuffer);
+			u_lim = l_lim + 100;
+		} else if (rxByte == 'N' || rxByte == 'n') {
+			// keep the limit values and run
+			continue;
 		}
-        if (rxByte == '0') {
-            USART_Write(USART2, (uint8_t *)e_prompt, strlen(e_prompt));
-        }
+		histogram(l_lim, u_lim);
+		
 	}
 }
 

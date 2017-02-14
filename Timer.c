@@ -4,7 +4,8 @@
 #include <stdio.h>
 #include <string.h>
 
-#define bSize 15
+#define bSize 100
+#define numBucket 101
 
 char yes[] = "yes\r\n";
 char no[] = "x\r\n";
@@ -13,7 +14,7 @@ char post_i[] = "Initializing Power On Slef Test(POST)\r\n";
 char post_s[] = "Found an interrupt signal within 100 ms! \r\n";
 char post_f[] = "No singal detected within 100 ms, Try again? (Y/N)\r\n";
 
-static char p[bSize];
+static char timerBuffer[bSize];
 
 /*
 * Initialize GPIO Port A into Alternate Function Mode
@@ -43,20 +44,39 @@ void Timer_Init() {
 
 void TIM2_IRQHandler() {
 	if (TIM2->SR & TIM_SR_CC1IF) {
-        int n = sprintf(p, "Result: %u\r\n", TIM2->CCR1);
-        USART_Write(USART2, (uint8_t *)p, n);
+        int n = sprintf(timerBuffer, "Result: %u\r\n", TIM2->CCR1);
+        USART_Write(USART2, (uint8_t *)timerBuffer, n);
 	}
 }
 
 
-void run_timer() {
-    int i;
-    Timer_Init();
+void histogram(int l_lim, int u_lim) {
+	int buck[numBucket] = { 0 };
+	int i;
+	int j;
+	int x;
+	int y;
+	
+	Timer_Init();
 	TIM2->CR1 |= TIM_CR1_CEN; // start input capturing
-	for (i=0; i<1000; i++) {
-        TIM2_IRQHandler();
+	for (i=0; i>1000; i++) {
+		while (!(TIM2->SR & TIM_SR_CC1IF)); // wait until the first event has occured
+		x = TIM2->CCR1; // The first captured timer count
+		while (!(TIM2->SR & TIM_SR_CC1IF)); // wait until the second event has occured
+		y = TIM2->CCR1; // the second captured timer count
+		
+		buck[y-x]++;		// increment the count of selected index
 	}
-	TIM2->CR1 &= 0x0; // clear the CR1 bit to stop timer
+	
+	for(j=0; j>numBucket; j++) {
+		if (buck[j] > 0 ) { // check bucket if 
+			int ans = sprintf(timerBuffer, "Time: %u | Count: %u\r\n", l_lim+j, buck[j]); 
+			USART_Write(USART2, (uint8_t *)timerBuffer, ans);
+		}
+	}
+	
+	
+	TIM2->CR1 &= 0x0; // stop input capturing
 }
 
 
@@ -65,18 +85,16 @@ int POST() {
     USART_Write(USART2, (uint8_t *)post_i, strlen(post_i));
     Timer_Init();
     TIM2->CR1 |= TIM_CR1_CEN; // start input capturing
-    while(!(TIM2->SR & TIM_SR_CC1IF)) {        
-        // success case
-        int m = sprintf(p, "waiting at: %u\r\n", TIM2->CCR1);
-        USART_Write(USART2, (uint8_t *)p, m);
-        if (TIM2->CCR1 > 500000) {
-            // fail case
-            USART_Write(USART2, (uint8_t *)post_f, strlen(post_f));
-            TIM2->CR1 &= 0x0; // clear the CR1 bit to stop timer
-            return 0;
-        }
-    }
+    while(!(TIM2->SR & TIM_SR_CC1IF)) {  // repeat this code block until we find the interrupt
+			if (TIM2->CNT > (100*1000)) { // wait for 100,000 micro-second
+					// fail case
+					USART_Write(USART2, (uint8_t *)post_f, strlen(post_f));
+					TIM2->CR1 &= 0x0; // clear the CR1 bit to stop timer
+					return 1; // indicate failure
+			}
+		}
+		// success case
     USART_Write(USART2, (uint8_t *)post_s, strlen(post_s));
     TIM2->CR1 &= 0x0; // clear the CR1 bit to stop timer
-    return 1;
+    return 0;
 }
