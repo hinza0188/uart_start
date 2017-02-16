@@ -11,8 +11,8 @@ char yes[] = "yes\r\n";
 char no[] = "x\r\n";
 
 char post_i[] = "Initializing Power On Slef Test(POST)\r\n";
-char post_s[] = "POST: SUCCESS | Interrupt signal found within 100 ms! \r\n\r\n";
-char post_f[] = "No singal detected within 100 ms, Try again? (Y/N)\r\n";
+char post_s[] = "POST: SUCCESS |  \r\n\r\n";
+char post_f[] = "Post Failed :, Try again? (Y/N)\r\n";
 char done[] = "Histogram Generated\r\n";
 
 static char timerBuffer[bSize];
@@ -52,7 +52,7 @@ void TIM2_IRQHandler() {
 
 
 void histogram(int l_lim, int u_lim) {
-	int buck[numBucket] = { 0 };
+	int buck[numBucket] =  0;
 	int old_count = 0;
 	int new_count = 0;
 	int check;
@@ -61,7 +61,7 @@ void histogram(int l_lim, int u_lim) {
 	
 	Timer_Init();
 	TIM2->CR1 |= TIM_CR1_CEN; // start input capturing
-	for (i=0; i<=1000; i++) { // capture 1001 measurements
+	for (i=0; i<1000; i++) { // capture 1001 measurements
 
 		while (!(TIM2->SR & TIM_SR_CC1IF)); // wait until the first event has occured
 		old_count = TIM2->CCR1; 	// copy the new one to old

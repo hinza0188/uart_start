@@ -87,36 +87,44 @@ int main(void){
 				} else if (rxByte == '\r'){
 					// kill the loop and terminate the buffer with caridge return
 					limBuffer[i] = '\0';
-
+                    break;}
+                     
 					// before break out, print user input
-					oo = sprintf(mainBuffer, "Input taken: %u\r\n", atoi(limBuffer));
-					USART_Write(USART2, (uint8_t *) mainBuffer, oo);
 					
-					USART_Write(USART2, (uint8_t *) cont_prompt, strlen(cont_prompt));
-					rxByte = USART_Read(USART2);
-					if (rxByte) {
-						break;
-					}					
-				} else {
-					USART_Write(USART2, (uint8_t *) nay, strlen(nay));
-				}
+				//	u_lim=l_lim+100;
+					
+								
+				
+                //else 
+				//	USART_Write(USART2, (uint8_t *) nay, strlen(nay));
+				//
 			}
+            oo = sprintf(mainBuffer, "Input taken: %u\r\n",atoi(limBuffer));
+					USART_Write(USART2, (uint8_t *) mainBuffer, oo);
 			l_lim = atoi(limBuffer);
-		} else if (rxByte == 'N' || rxByte == 'n') {
+            u_lim=l_lim+100;
+            histogram(l_lim, u_lim);
+            
+		} 
+        
+        else if (rxByte == 'N' || rxByte == 'n') {
 			// keep the limit values and run
 			USART_Write(USART2, (uint8_t *)default_prompt , strlen(default_prompt));
-			l_lim = 950;
-		} else {
-			continue;		// restart upon other inputs
-		}
-		u_lim = l_lim + 100;
+			//
+       l_lim = 950;
+	 
+		
 		if (l_lim <= 9950 && l_lim >= 50) {
-			histogram(l_lim, u_lim);
-		} else {
+		
+            histogram(l_lim, u_lim);
+		} 
+        else {
 			USART_Write(USART2, (uint8_t *)ob_promtp, strlen(ob_promtp));
 		}
 		
-		USART_Write(USART2, (uint8_t *)end_promtp, strlen(end_promtp));
+		
+		}
+        USART_Write(USART2, (uint8_t *)end_promtp, strlen(end_promtp));
 		
 		rxByte = USART_Read(USART2);
 		if (rxByte == 'Y' || rxByte == 'y') {
@@ -124,8 +132,7 @@ int main(void){
 		} else if (rxByte == 'N' || rxByte == 'n') {
 			USART_Write(USART2, (uint8_t *)terminate, strlen(terminate));
 			break;
-		}
 	}
 }
 
-
+}
