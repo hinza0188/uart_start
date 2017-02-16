@@ -11,8 +11,9 @@ char yes[] = "yes\r\n";
 char no[] = "x\r\n";
 
 char post_i[] = "Initializing Power On Slef Test(POST)\r\n";
-char post_s[] = "Found an interrupt signal within 100 ms! \r\n";
+char post_s[] = "POST: SUCCESS | Interrupt signal found within 100 ms! \r\n\r\n";
 char post_f[] = "No singal detected within 100 ms, Try again? (Y/N)\r\n";
+char done[] = "Histogram Generated\r\n";
 
 static char timerBuffer[bSize];
 
@@ -32,13 +33,13 @@ void GPIO_Init() {
 */
 void Timer_Init() {	
 	RCC->APB1ENR1 |= RCC_APB1ENR1_TIM2EN; // Enable Timer 2 Clock
-	TIM2->PSC &= 80;											// Set 80Mhz CPU Pre-Scalar
+	TIM2->PSC = 79;											// Set 80Mhz CPU Pre-Scalar
 	TIM2->EGR |= 0x01;											// Reset TIM2 for applying PSC
 	TIM2->CCER &= 0x1;										// disable Timer 2 output register
 	TIM2->CCMR1 |= 0x1;										// the channel is now input, CCR1 register is now read-only
 	TIM2->CCER |= 0x1;										// enable Timer 2 output register
-    TIM2->DIER = TIM_DIER_BIE;                              // Enable update interrupt (timer level)
-    NVIC_EnableIRQ(TIM2_IRQn);                              // Enable interrupt from TIM2 (NVIC level)
+  TIM2->DIER = TIM_DIER_BIE;                              // Enable update interrupt (timer level)
+  NVIC_EnableIRQ(TIM2_IRQn);                              // Enable interrupt from TIM2 (NVIC level)
 }
 
 
@@ -52,30 +53,42 @@ void TIM2_IRQHandler() {
 
 void histogram(int l_lim, int u_lim) {
 	int buck[numBucket] = { 0 };
+	int old_count = 0;
+	int new_count = 0;
+	int check;
 	int i;
 	int j;
-	int x;
-	int y;
 	
 	Timer_Init();
 	TIM2->CR1 |= TIM_CR1_CEN; // start input capturing
-	for (i=0; i>1000; i++) {
+	for (i=0; i<=1000; i++) { // capture 1001 measurements
+
 		while (!(TIM2->SR & TIM_SR_CC1IF)); // wait until the first event has occured
-		x = TIM2->CCR1; // The first captured timer count
-		while (!(TIM2->SR & TIM_SR_CC1IF)); // wait until the second event has occured
-		y = TIM2->CCR1; // the second captured timer count
+		old_count = TIM2->CCR1; 	// copy the new one to old
+		while (!(TIM2->SR & TIM_SR_CC1IF));
+		new_count = TIM2->CCR1; // The first captured timer count
 		
-		buck[y-x]++;		// increment the count of selected index
+		// now check the values if its in the range
+		check = (new_count - old_count - l_lim);
+		
+		if (check >= numBucket || check < 0) {
+			i--;				// decrement the repeat count
+			continue;		// forget about this iteration
+		}
+		
+		// the index value has been sanitized
+		buck[check]++;		// increment the count of selected index
 	}
 	
-	for(j=0; j>numBucket; j++) {
+	// print the header for the answer
+	USART_Write(USART2, (uint8_t *)done, strlen(done));
+		
+	for(j=0; j<numBucket; j++) {
 		if (buck[j] > 0 ) { // check bucket if 
 			int ans = sprintf(timerBuffer, "Time: %u | Count: %u\r\n", l_lim+j, buck[j]); 
 			USART_Write(USART2, (uint8_t *)timerBuffer, ans);
 		}
 	}
-	
-	
 	TIM2->CR1 &= 0x0; // stop input capturing
 }
 
